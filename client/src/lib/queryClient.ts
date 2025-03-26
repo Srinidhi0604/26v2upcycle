@@ -1,8 +1,8 @@
 // Import only what we need to reduce bundle size
 import { QueryClient, QueryFunction, QueryKey } from "@tanstack/react-query";
 
-// Get API URL from environment variable or use a default for local development
-const API_URL = import.meta.env.VITE_API_URL?.replace(/\/$/, '') || '';
+// Get API URL from environment variable or use Netlify functions path
+const API_URL = '/.netlify/functions';
 
 // Simple utility to handle API responses
 async function throwIfResNotOk(res: Response) {
@@ -18,11 +18,12 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  // Remove /api prefix since it's already in the API_URL
-  const cleanUrl = url.startsWith('/api/') ? url.substring(4) : url;
-  const fullUrl = url.startsWith('http') ? url : `${API_URL}/${cleanUrl}`;
+  // Handle both Netlify function calls and regular API calls
+  const fullUrl = url.startsWith('/.netlify/functions') 
+    ? url 
+    : `${API_URL}${url}`;
   
-  console.log('Making API request to:', fullUrl); // Add logging to debug URL construction
+  console.log('Making API request to:', fullUrl); // Debug log
   
   const res = await fetch(fullUrl, {
     method,
@@ -44,11 +45,12 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> = (options) => {
   return async ({ queryKey }: { queryKey: QueryKey }) => {
     const url = queryKey[0] as string;
-    // Remove /api prefix since it's already in the API_URL
-    const cleanUrl = url.startsWith('/api/') ? url.substring(4) : url;
-    const fullUrl = url.startsWith('http') ? url : `${API_URL}/${cleanUrl}`;
+    // Handle both Netlify function calls and regular API calls
+    const fullUrl = url.startsWith('/.netlify/functions') 
+      ? url 
+      : `${API_URL}${url}`;
     
-    console.log('Making query to:', fullUrl); // Add logging to debug URL construction
+    console.log('Making query to:', fullUrl); // Debug log
     
     const res = await fetch(fullUrl, {
       credentials: "include",

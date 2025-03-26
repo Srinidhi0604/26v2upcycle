@@ -82,23 +82,11 @@ const AddProduct = () => {
     mutationFn: async (values: ProductFormValues) => {
       console.log("Submitting values:", values); // Debug log
       
-      // Create the product using the dedicated function
-      const res = await fetch('/.netlify/functions/create-product', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          ...values,
-          sellerId: String(user.id),
-        })
+      // Create the product
+      const res = await apiRequest('POST', '/create-product', {
+        ...values,
+        sellerId: String(user.id),
       });
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error("API Error:", errorText); // Debug log
-        throw new Error(errorText);
-      }
 
       const data = await res.json();
       console.log("API Response:", data); // Debug log
@@ -107,23 +95,11 @@ const AddProduct = () => {
       if (uploadedImages.length > 0) {
         await Promise.all(
           uploadedImages.map(async (image) => {
-            const imageRes = await fetch(`/.netlify/functions/create-product-image`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                url: image.url,
-                isMain: image.isMain,
-                productId: data.product.id,
-              })
+            const imageRes = await apiRequest('POST', '/create-product-image', {
+              url: image.url,
+              isMain: image.isMain,
+              productId: data.product.id,
             });
-            
-            if (!imageRes.ok) {
-              const imageError = await imageRes.text();
-              console.error("Image Upload Error:", imageError); // Debug log
-              throw new Error(imageError);
-            }
           })
         );
       }
@@ -135,8 +111,8 @@ const AddProduct = () => {
         title: "Product added",
         description: "Your item has been listed successfully.",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/products/seller"] });
+      queryClient.invalidateQueries({ queryKey: ["/products"] });
+      queryClient.invalidateQueries({ queryKey: ["/products/seller"] });
       navigate("/dashboard");
     },
     onError: (error: Error) => {

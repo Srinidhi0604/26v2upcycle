@@ -12,9 +12,15 @@ type ProductImage = z.infer<typeof insertProductImageSchema>;
 
 export const storage = {
   async createProduct(data: Product) {
+    // Convert price to number for database storage
+    const dbData = {
+      ...data,
+      price: parseFloat(data.price)
+    };
+
     const { data: product, error } = await supabase
       .from('products')
-      .insert([data])
+      .insert([dbData])
       .select()
       .single();
 
