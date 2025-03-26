@@ -4,7 +4,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 // Get Supabase URL and anon key from environment variables
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-const siteUrl = import.meta.env.VITE_SITE_URL || 'https://67e3da5e67eec850e4da81fa--upcyclehub.netlify.app';
+const siteUrl = import.meta.env.VITE_SITE_URL || 'https://upcyclemarket.netlify.app';
 
 // Create Supabase client lazily to reduce initial load
 let supabaseInstance: SupabaseClient | null = null;
@@ -20,7 +20,10 @@ export const getSupabase = (): SupabaseClient => {
         persistSession: true,
         autoRefreshToken: true,
         storageKey: 'upcyclehub_auth',
-        storage: window.localStorage
+        storage: window.localStorage,
+        flowType: 'pkce',
+        detectSessionInUrl: true,
+        site_url: siteUrl
       }
     });
   }
@@ -31,7 +34,7 @@ export const getSupabase = (): SupabaseClient => {
 export const supabase = getSupabase();
 
 // Bucket name constant for easier management
-const BUCKET_NAME = import.meta.env.VITE_STORAGE_BUCKET_NAME || 'upcycle-hub';
+const BUCKET_NAME = import.meta.env.VITE_STORAGE_BUCKET_NAME || 'upcycle-hub-storage';
 
 // Function to check if bucket exists and is accessible
 async function isBucketAccessible(): Promise<boolean> {
