@@ -10,8 +10,8 @@ type ProductCardProps = {
 };
 
 const ProductCard = ({ product, mainImage, showViewButton = true }: ProductCardProps) => {
-  // Format price from cents to dollars with 2 decimal places
-  const formattedPrice = `$${(product.price / 100).toFixed(2)}`;
+  // Format price in INR
+  const formattedPrice = `₹${parseInt(product.price).toLocaleString('en-IN')}`;
 
   // Default image if none is provided
   const imageUrl = mainImage?.url || "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80";

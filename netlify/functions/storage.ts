@@ -12,10 +12,10 @@ type ProductImage = z.infer<typeof insertProductImageSchema>;
 
 export const storage = {
   async createProduct(data: Product) {
-    // Convert price to number for database storage
+    // Price is already in cents from the schema transformation
     const dbData = {
       ...data,
-      price: parseFloat(data.price)
+      price: parseInt(data.price) // Convert string to integer for database
     };
 
     const { data: product, error } = await supabase

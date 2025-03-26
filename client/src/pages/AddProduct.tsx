@@ -82,9 +82,13 @@ const AddProduct = () => {
     mutationFn: async (values: ProductFormValues) => {
       console.log("Submitting values:", values); // Debug log
       
+      // Round to whole rupees
+      const priceInRupees = Math.round(parseFloat(values.price));
+      
       // Create the product
-      const res = await apiRequest('POST', '/create-product', {
+      const res = await apiRequest('POST', '/api/products', {
         ...values,
+        price: String(priceInRupees), // Keep as string for schema validation
         sellerId: String(user.id),
       });
 
@@ -95,11 +99,14 @@ const AddProduct = () => {
       if (uploadedImages.length > 0) {
         await Promise.all(
           uploadedImages.map(async (image) => {
-            const imageRes = await apiRequest('POST', '/create-product-image', {
+            const imageRes = await apiRequest('POST', `/api/products/${data.product.id}/images`, {
               url: image.url,
               isMain: image.isMain,
-              productId: data.product.id,
+              productId: String(data.product.id),
             });
+            if (!imageRes.ok) {
+              throw new Error('Failed to upload product image');
+            }
           })
         );
       }
@@ -111,8 +118,8 @@ const AddProduct = () => {
         title: "Product added",
         description: "Your item has been listed successfully.",
       });
-      queryClient.invalidateQueries({ queryKey: ["/products"] });
-      queryClient.invalidateQueries({ queryKey: ["/products/seller"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/products/seller"] });
       navigate("/dashboard");
     },
     onError: (error: Error) => {

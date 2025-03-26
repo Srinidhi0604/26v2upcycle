@@ -9,7 +9,10 @@ export const insertProductSchema = z.object({
       const price = parseFloat(val);
       if (isNaN(price)) throw new Error("Invalid price");
       if (price < 0) throw new Error("Price must be positive");
-      return val; // Keep as string
+      // Validate INR amount (no decimals needed for rupees)
+      const rupees = Math.round(price);
+      if (rupees > Number.MAX_SAFE_INTEGER) throw new Error("Price is too large");
+      return String(rupees); // Store as whole rupees
     }),
   category: z.string().min(1, "Category is required"),
   condition: z.string().min(1, "Condition is required"),

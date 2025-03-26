@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Heart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { ProductImage } from "@shared/schema";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -147,8 +148,8 @@ const ProductDetail = () => {
     );
   }
 
-  // Format price from cents to dollars
-  const formattedPrice = `$${(product.price / 100).toFixed(2)}`;
+  // Format price in INR
+  const formattedPrice = `₹${parseInt(product.price).toLocaleString('en-IN')}`;
   
   // Calculate "Seller since" date
   const sellerSinceYear = seller?.createdAt 
@@ -169,7 +170,7 @@ const ProductDetail = () => {
           </div>
           {images.length > 0 && (
             <div className="mt-4 grid grid-cols-4 gap-2">
-              {images.map((image, index) => (
+              {images.map((image: ProductImage, index: number) => (
                 <div 
                   key={image.id} 
                   className={`aspect-w-1 aspect-h-1 rounded-md overflow-hidden cursor-pointer ${
