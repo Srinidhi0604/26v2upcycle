@@ -32,5 +32,28 @@ export default defineConfig({
   build: {
     outDir: path.resolve(__dirname, "dist/public"),
     emptyOutDir: true,
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor': [
+            'react',
+            'react-dom',
+            'react-router-dom',
+            'wouter',
+            '@tanstack/react-query',
+            '@supabase/supabase-js',
+            'zod',
+          ],
+          'ui': [
+            '@/components/ui',
+          ],
+          'forms': [
+            'react-hook-form',
+            '@hookform/resolvers/zod',
+          ],
+        },
+      },
+    },
   },
 });
