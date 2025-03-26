@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { insertProductSchema } from "@shared/schema";
+import { insertProductSchema } from "@/lib/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,19 +37,8 @@ import {
 import ImageUpload from "@/components/ImageUpload";
 import { ArrowLeft } from "lucide-react";
 
-// Extend the product schema with custom validations
-const productFormSchema = insertProductSchema.extend({
-  price: z
-    .string()
-    .min(1, "Price is required")
-    .refine(
-      (val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0,
-      "Price must be a positive number"
-    ),
-});
-
-// Transform the form values to the API format
-type ProductFormValues = z.infer<typeof productFormSchema> & { price: string };
+// Use the schema directly without extending
+type ProductFormValues = z.infer<typeof insertProductSchema>;
 
 const AddProduct = () => {
   const { user } = useAuth();
@@ -75,7 +64,7 @@ const AddProduct = () => {
 
   // Initialize the form with default values
   const form = useForm<ProductFormValues>({
-    resolver: zodResolver(productFormSchema),
+    resolver: zodResolver(insertProductSchema),
     defaultValues: {
       title: "",
       description: "",
@@ -84,13 +73,15 @@ const AddProduct = () => {
       condition: "",
       location: "",
       sellerId: String(user.id),
-      status: "active",
+      status: "active" as const,
     },
   });
 
   // Create product mutation
   const createProduct = useMutation({
     mutationFn: async (values: ProductFormValues) => {
+      console.log("Submitting values:", values); // Debug log
+      
       // Create the product using the dedicated function
       const res = await fetch('/.netlify/functions/create-product', {
         method: 'POST',
@@ -99,23 +90,24 @@ const AddProduct = () => {
         },
         body: JSON.stringify({
           ...values,
-          price: values.price,
           sellerId: String(user.id),
         })
       });
 
       if (!res.ok) {
-        const error = await res.text();
-        throw new Error(error);
+        const errorText = await res.text();
+        console.error("API Error:", errorText); // Debug log
+        throw new Error(errorText);
       }
 
       const data = await res.json();
+      console.log("API Response:", data); // Debug log
       
       // Upload images for the product
       if (uploadedImages.length > 0) {
         await Promise.all(
           uploadedImages.map(async (image) => {
-            await fetch(`/.netlify/functions/create-product-image`, {
+            const imageRes = await fetch(`/.netlify/functions/create-product-image`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json'
@@ -126,6 +118,12 @@ const AddProduct = () => {
                 productId: data.product.id,
               })
             });
+            
+            if (!imageRes.ok) {
+              const imageError = await imageRes.text();
+              console.error("Image Upload Error:", imageError); // Debug log
+              throw new Error(imageError);
+            }
           })
         );
       }
@@ -142,6 +140,7 @@ const AddProduct = () => {
       navigate("/dashboard");
     },
     onError: (error: Error) => {
+      console.error("Mutation Error:", error); // Debug log
       toast({
         title: "Error",
         description: error.message || "Failed to add product. Please try again.",
@@ -152,6 +151,8 @@ const AddProduct = () => {
 
   // Handle form submission
   const onSubmit = (values: ProductFormValues) => {
+    console.log("Form values:", values); // Debug log
+    
     if (uploadedImages.length === 0) {
       toast({
         title: "Images required",
@@ -231,7 +232,6 @@ const AddProduct = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="select_category">Select a category</SelectItem>
                         <SelectItem value="Clothing">Clothing</SelectItem>
                         <SelectItem value="Electronics">Electronics</SelectItem>
                         <SelectItem value="Furniture">Furniture</SelectItem>
@@ -254,7 +254,7 @@ const AddProduct = () => {
                     <FormLabel>Price</FormLabel>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span className="text-neutral-500 sm:text-sm">$</span>
+                        <span className="text-neutral-500 sm:text-sm">₹</span>
                       </div>
                       <FormControl>
                         <Input
@@ -285,7 +285,6 @@ const AddProduct = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="select_condition">Select condition</SelectItem>
                         <SelectItem value="New">New</SelectItem>
                         <SelectItem value="Like New">Like New</SelectItem>
                         <SelectItem value="Excellent">Excellent</SelectItem>
