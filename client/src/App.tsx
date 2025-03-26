@@ -10,12 +10,13 @@ import Loading from "@/components/Loading";
 
 // Lazy load pages
 const Home = lazy(() => import("@/pages/Home"));
-const Login = lazy(() => import("@/pages/Login"));
-const Register = lazy(() => import("@/pages/Register"));
 const AddProduct = lazy(() => import("@/pages/AddProduct"));
 const ProductDetail = lazy(() => import("@/pages/ProductDetail"));
-const Dashboard = lazy(() => import("@/pages/Dashboard"));
+const SellerDashboard = lazy(() => import("@/pages/SellerDashboard"));
 const Messages = lazy(() => import("@/pages/Messages"));
+const Browse = lazy(() => import("@/pages/Browse"));
+const About = lazy(() => import("@/pages/About"));
+const NotFound = lazy(() => import("@/pages/not-found"));
 
 function App() {
   return (
@@ -27,13 +28,14 @@ function App() {
             <Suspense fallback={<Loading />}>
               <Switch>
                 <Route path="/" component={Home} />
-                <Route path="/login" component={Login} />
-                <Route path="/register" component={Register} />
+                <Route path="/browse" component={Browse} />
                 <Route path="/add-product" component={AddProduct} />
                 <Route path="/product/:id" component={ProductDetail} />
-                <Route path="/dashboard" component={Dashboard} />
+                <Route path="/dashboard" component={SellerDashboard} />
                 <Route path="/messages" component={Messages} />
                 <Route path="/messages/:conversationId" component={Messages} />
+                <Route path="/about" component={About} />
+                <Route component={NotFound} />
               </Switch>
             </Suspense>
           </main>
