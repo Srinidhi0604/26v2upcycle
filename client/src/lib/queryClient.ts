@@ -18,8 +18,9 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  // Construct the full URL without modifying the path
-  const fullUrl = url.startsWith('http') ? url : `${API_URL}${url}`;
+  // Remove /api prefix since it's already in the API_URL
+  const cleanUrl = url.startsWith('/api/') ? url.substring(4) : url;
+  const fullUrl = url.startsWith('http') ? url : `${API_URL}/${cleanUrl}`;
   
   console.log('Making API request to:', fullUrl); // Add logging to debug URL construction
   
@@ -43,8 +44,9 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> = (options) => {
   return async ({ queryKey }: { queryKey: QueryKey }) => {
     const url = queryKey[0] as string;
-    // Use the same URL construction logic as apiRequest
-    const fullUrl = url.startsWith('http') ? url : `${API_URL}${url}`;
+    // Remove /api prefix since it's already in the API_URL
+    const cleanUrl = url.startsWith('/api/') ? url.substring(4) : url;
+    const fullUrl = url.startsWith('http') ? url : `${API_URL}/${cleanUrl}`;
     
     console.log('Making query to:', fullUrl); // Add logging to debug URL construction
     
