@@ -2,7 +2,7 @@
 import { QueryClient } from "@tanstack/react-query";
 
 // Get API URL from environment variable or use a default for local development
-const API_URL = import.meta.env.VITE_API_URL || '/.netlify/functions/api';
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 // Simple utility to handle API responses
 async function throwIfResNotOk(res: Response) {
