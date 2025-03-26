@@ -1,5 +1,5 @@
 // Import only what we need to reduce bundle size
-import { QueryClient } from "@tanstack/react-query";
+import { QueryClient, QueryFunction, QueryKey } from "@tanstack/react-query";
 
 // Get API URL from environment variable or use a default for local development
 const API_URL = import.meta.env.VITE_API_URL || '';
@@ -18,8 +18,9 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  // Ensure URL starts with API_URL
-  const fullUrl = url.startsWith('http') ? url : `${API_URL}${url}`;
+  // Ensure URL starts with API_URL and remove any duplicate /api prefixes
+  const cleanUrl = url.startsWith('/api/') ? url.substring(4) : url;
+  const fullUrl = url.startsWith('http') ? url : `${API_URL}/${cleanUrl}`;
   
   const res = await fetch(fullUrl, {
     method,
@@ -39,7 +40,7 @@ type UnauthorizedBehavior = "returnNull" | "throw";
 export const getQueryFn: <T>(options: {
   on401: UnauthorizedBehavior;
 }) => QueryFunction<T> = (options) => {
-  return async ({ queryKey }) => {
+  return async ({ queryKey }: { queryKey: QueryKey }) => {
     const url = queryKey[0] as string;
     const fullUrl = url.startsWith('http') ? url : `${API_URL}${url}`;
     
