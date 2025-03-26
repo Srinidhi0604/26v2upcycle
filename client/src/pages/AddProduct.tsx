@@ -91,26 +91,40 @@ const AddProduct = () => {
   // Create product mutation
   const createProduct = useMutation({
     mutationFn: async (values: ProductFormValues) => {
-      // Transform price from dollars to cents
-      const priceInCents = Math.round(parseFloat(values.price) * 100);
-      
-      // Create the product
-      const res = await apiRequest("POST", "/api/products", {
-        ...values,
-        price: priceInCents,
-        sellerId: user.id,
+      // Create the product using the dedicated function
+      const res = await fetch('/.netlify/functions/create-product', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          ...values,
+          price: values.price,
+          sellerId: user.id,
+        })
       });
-      
+
+      if (!res.ok) {
+        const error = await res.text();
+        throw new Error(error);
+      }
+
       const data = await res.json();
       
       // Upload images for the product
       if (uploadedImages.length > 0) {
         await Promise.all(
           uploadedImages.map(async (image) => {
-            await apiRequest("POST", `/api/products/${data.product.id}/images`, {
-              url: image.url,
-              isMain: image.isMain,
-              productId: data.product.id,
+            await fetch(`/.netlify/functions/create-product-image`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                url: image.url,
+                isMain: image.isMain,
+                productId: data.product.id,
+              })
             });
           })
         );
