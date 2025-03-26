@@ -83,7 +83,7 @@ const AddProduct = () => {
       category: "",
       condition: "",
       location: "",
-      sellerId: user.id,
+      sellerId: String(user.id),
       status: "active",
     },
   });
@@ -100,7 +100,7 @@ const AddProduct = () => {
         body: JSON.stringify({
           ...values,
           price: values.price,
-          sellerId: user.id,
+          sellerId: String(user.id),
         })
       });
 
