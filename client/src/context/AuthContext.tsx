@@ -2,8 +2,15 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { getSupabase } from "@/lib/supabase";
 import { User } from "@shared/schema";
 
+// Add rate limiting constants
+const SIGNUP_COOLDOWN_MS = 60000; // 1 minute cooldown
+let lastSignupAttempt = 0;
+
+// Omit password from User type for client-side use
+type ClientUser = Omit<User, 'password'>;
+
 type AuthContextType = {
-  user: User | null;
+  user: ClientUser | null;
   login: (email: string, password: string) => Promise<void>;
   signup: (userData: SignupData) => Promise<void>;
   logout: () => Promise<void>;
@@ -22,7 +29,7 @@ type SignupData = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<ClientUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Check for existing user session on load
@@ -38,7 +45,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
         
         if (session?.user) {
-          const userData: User = {
+          const userData: ClientUser = {
             id: parseInt(session.user.id),
             uuid: session.user.id,
             email: session.user.email!,
@@ -74,7 +81,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === 'SIGNED_IN' && session) {
-          const userData: User = {
+          const userData: ClientUser = {
             id: parseInt(session.user.id),
             uuid: session.user.id,
             email: session.user.email!,
@@ -128,6 +135,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signup = async (userData: SignupData) => {
     setIsLoading(true);
     try {
+      // Check rate limiting
+      const now = Date.now();
+      if (now - lastSignupAttempt < SIGNUP_COOLDOWN_MS) {
+        throw new Error(`Please wait ${Math.ceil((SIGNUP_COOLDOWN_MS - (now - lastSignupAttempt)) / 1000)} seconds before trying again`);
+      }
+      
+      lastSignupAttempt = now;
       const supabase = getSupabase();
       
       // Sign up with Supabase
@@ -154,7 +168,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       // Create user object from Supabase data
-      const newUser: User = {
+      const newUser: ClientUser = {
         id: parseInt(data.user.id),
         uuid: data.user.id,
         email: data.user.email!,
@@ -169,8 +183,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Update local state
       setUser(newUser);
       localStorage.setItem("user", JSON.stringify(newUser));
-
-      return newUser;
     } catch (error) {
       console.error("Signup error:", error);
       throw error;
