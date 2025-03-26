@@ -18,9 +18,8 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  // Ensure URL starts with API_URL and remove any duplicate /api prefixes
-  const cleanUrl = url.startsWith('/api/') ? url.substring(4) : url.replace(/^\//, '');
-  const fullUrl = url.startsWith('http') ? url : `${API_URL}/${cleanUrl}`;
+  // Construct the full URL without modifying the path
+  const fullUrl = url.startsWith('http') ? url : `${API_URL}${url}`;
   
   console.log('Making API request to:', fullUrl); // Add logging to debug URL construction
   
@@ -45,8 +44,7 @@ export const getQueryFn: <T>(options: {
   return async ({ queryKey }: { queryKey: QueryKey }) => {
     const url = queryKey[0] as string;
     // Use the same URL construction logic as apiRequest
-    const cleanUrl = url.startsWith('/api/') ? url.substring(4) : url.replace(/^\//, '');
-    const fullUrl = url.startsWith('http') ? url : `${API_URL}/${cleanUrl}`;
+    const fullUrl = url.startsWith('http') ? url : `${API_URL}${url}`;
     
     console.log('Making query to:', fullUrl); // Add logging to debug URL construction
     
