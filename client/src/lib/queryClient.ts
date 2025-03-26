@@ -2,7 +2,7 @@
 import { QueryClient, QueryFunction, QueryKey } from "@tanstack/react-query";
 
 // Get API URL from environment variable or use a default for local development
-const API_URL = import.meta.env.VITE_API_URL || '';
+const API_URL = import.meta.env.VITE_API_URL?.replace(/\/$/, '') || '';
 
 // Simple utility to handle API responses
 async function throwIfResNotOk(res: Response) {
@@ -19,8 +19,10 @@ export async function apiRequest(
   data?: unknown | undefined,
 ): Promise<Response> {
   // Ensure URL starts with API_URL and remove any duplicate /api prefixes
-  const cleanUrl = url.startsWith('/api/') ? url.substring(4) : url;
+  const cleanUrl = url.startsWith('/api/') ? url.substring(4) : url.replace(/^\//, '');
   const fullUrl = url.startsWith('http') ? url : `${API_URL}/${cleanUrl}`;
+  
+  console.log('Making API request to:', fullUrl); // Add logging to debug URL construction
   
   const res = await fetch(fullUrl, {
     method,
@@ -42,7 +44,11 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> = (options) => {
   return async ({ queryKey }: { queryKey: QueryKey }) => {
     const url = queryKey[0] as string;
-    const fullUrl = url.startsWith('http') ? url : `${API_URL}${url}`;
+    // Use the same URL construction logic as apiRequest
+    const cleanUrl = url.startsWith('/api/') ? url.substring(4) : url.replace(/^\//, '');
+    const fullUrl = url.startsWith('http') ? url : `${API_URL}/${cleanUrl}`;
+    
+    console.log('Making query to:', fullUrl); // Add logging to debug URL construction
     
     const res = await fetch(fullUrl, {
       credentials: "include",

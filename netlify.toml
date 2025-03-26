@@ -1,6 +1,7 @@
 [build]
   command = "npm run build"
   publish = "dist/public"
+  functions = "netlify/functions"
 
 [[redirects]]
   from = "/api/*"
@@ -14,4 +15,7 @@
   status = 200
 
 [build.environment]
-  NODE_VERSION = "20" 
+  NODE_VERSION = "20"
+
+[functions]
+  node_bundler = "esbuild" 
