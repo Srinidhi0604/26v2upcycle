@@ -9,14 +9,16 @@ const __dirname = dirname(__filename);
 
 export default defineConfig({
   plugins: [react()],
+  root: "./client",
+  build: {
+    outDir: "../dist",
+    sourcemap: true,
+    emptyOutDir: true
+  },
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./client", import.meta.url).href)
     }
-  },
-  build: {
-    outDir: "dist",
-    sourcemap: true
   },
   server: {
     proxy: {
