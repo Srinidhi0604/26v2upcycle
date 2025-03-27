@@ -11,7 +11,7 @@ export default defineConfig({
   plugins: [react()],
   root: "./client",
   build: {
-    outDir: "../dist",
+    outDir: "dist",
     sourcemap: true,
     emptyOutDir: true
   },
