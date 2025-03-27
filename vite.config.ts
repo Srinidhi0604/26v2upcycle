@@ -1,22 +1,18 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import path, { dirname } from "path";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import path from "path";
 
 export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src")
+      "@": path.resolve(__dirname, "./client")
     }
   },
   build: {
     outDir: "dist",
     sourcemap: true
   },
-  root: path.resolve(__dirname, "client"),
   server: {
     proxy: {
       '/api': {
